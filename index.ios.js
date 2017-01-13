@@ -19,8 +19,9 @@ import {
 import haversine from 'haversine'
 import pick from 'lodash.pick'
 
-const { width, height } = Dimensions.get('window')
+import SplashScreen from 'react-native-splash-screen'
 
+const { width, height } = Dimensions.get('window')
 
 
 class Map extends Component {
@@ -36,9 +37,10 @@ constructor(props) {
   }
 
 ///////
-
+ 
 componentDidMount() {
     //StatusBarIOS.setStyle('light-content')
+    SplashScreen.hide();
     navigator.geolocation.getCurrentPosition(
       (position) => {},
       (error) => alert(error.message),
@@ -71,16 +73,16 @@ componentDidMount() {
       <View style={styles.container}>
         <MapView
           style={styles.map}
-          mapType='satellite'
+          mapType='standard'
           showsUserLocation={true}
           followUserLocation={true}
           overlays={[{
             coordinates: this.state.routeCoordinates,
-            strokeColor: '#19B5FE',
-            lineWidth: 10,
+            strokeColor: '#7B88F7',
+            lineWidth: 9,
           }]}
         />
-        <View style={styles.navBar}><Text style={styles.navBarText}>RunerPro</Text></View>
+        <View style={styles.navBar}><Text style={styles.navBarText}>Run</Text></View>
        
         <View style={styles.bottomBar}>
           <View style={styles.bottomBarGroup}>
@@ -103,7 +105,7 @@ var styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
   },
   navBar: {
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
     height: 64,
     width: width,
     position: 'absolute',
@@ -113,7 +115,7 @@ var styles = StyleSheet.create({
     right: 0
   },
   navBarText: {
-    color: '#19B5FE',
+    color: '#7B88F7',
     fontSize: 16,
     fontWeight: "700",
     textAlign: 'center',
@@ -128,7 +130,7 @@ var styles = StyleSheet.create({
     position: 'absolute',
     height: 100,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
     width: width,
     padding: 20,
     flexWrap: 'wrap',
