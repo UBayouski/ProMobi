@@ -1,3 +1,3 @@
 # ProMobi
 
-![ScreenShot](https://raw.github.com/nadzeyamatskevich/RunnerPro/ProMobi/blob/nadezda/screenshots/splashscreen.png)
+![ScreenShot](https://github.com/RunnerPro/ProMobi/blob/nadezda/screenshots/alert.png)
