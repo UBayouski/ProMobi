@@ -1,46 +1,92 @@
 import React, { Component } from 'react';
-
 import {
-  
   AppRegistry,
-  MapView,
-  View,
   StyleSheet,
-  NavigatorIOS,
   Text,
-  TouchableHighlight,
-  Image,
+  View,
+  Navigator,
+  TouchableOpacity,
+  MapView,
   Dimensions,
-  StatusBarIOS
-
-  
+  Image,
+  Alert
 } from 'react-native';
+
+import SplashScreen from 'react-native-splash-screen'
 
 import haversine from 'haversine'
 import pick from 'lodash.pick'
 
-import SplashScreen from 'react-native-splash-screen'
+
+var SCREEN_WIDTH = require('Dimensions').get('window').width;
+var BaseConfig = Navigator.SceneConfigs.FloatFromRight;
 
 const { width, height } = Dimensions.get('window')
 
 
-class Map extends Component {
 
-constructor(props) {
-    super(props)
+var CustomLeftToRightGesture = Object.assign({}, BaseConfig.gestures.pop, {
+  // Make it snap back really quickly after canceling pop
+  snapVelocity: 8,
+  // Make it so we can drag anywhere on the screen
+  edgeHitWidth: SCREEN_WIDTH,
+});
 
-    this.state = {
+var CustomSceneConfig = Object.assign({}, BaseConfig, {
+  // A very tighly wound spring will make this transition fast
+  springTension: 100,
+  springFriction: 1,
+  // Use our custom gesture defined above
+  gestures: {
+    pop: CustomLeftToRightGesture,
+  }
+});
+
+
+var PageOne = React.createClass({
+  _handlePress() {
+    this.props.navigator.push({id: 2,});
+  },
+
+  render() {
+    return (
+      <View style={[styles.container, {backgroundColor: 'rgb(247, 246, 256)'}]}>
+      <Image
+        style={styles.imageLogo}
+        source={require('./logo.png')}
+      />
+        <Text style={styles.welcome}>Welcome to RunnerPro</Text>
+        <TouchableOpacity onPress={this._handlePress}>
+          <View style={styles.buttomGet}>
+            <Text style={styles.buttomGetText}>Get</Text>
+          </View>
+        </TouchableOpacity>
+       </View>
+    )
+  },
+});
+
+var PageTwo = React.createClass ({
+getInitialState: function() {
+    
+    return {
       routeCoordinates: [],
       distanceTravelled: 0,
-      prevLatLng: {}
-    }
-  }
+      prevLatLng: {},
 
-///////
+    }
+  },
+
  
-componentDidMount() {
-    //StatusBarIOS.setStyle('light-content')
-    SplashScreen.hide();
+ _onPressButton() {
+    Alert.alert('Your distance '+ parseFloat(this.state.distanceTravelled).toFixed(2) +' km');
+   
+},
+
+
+  componentDidMount() {
+   
+   
     navigator.geolocation.getCurrentPosition(
       (position) => {},
       (error) => alert(error.message),
@@ -56,21 +102,23 @@ componentDidMount() {
         prevLatLng: newLatLngs
       })
     });
-  }
+  },
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
-  }
+  },
 
   calcDistance(newLatLng) {
     const { prevLatLng } = this.state
     return (haversine(prevLatLng, newLatLng) || 0)
-  }
+  },
 
-/////////
+
   render() {
+
     return (
       <View style={styles.container}>
+        
         <MapView
           style={styles.map}
           mapType='standard'
@@ -81,28 +129,89 @@ componentDidMount() {
             strokeColor: '#7B88F7',
             lineWidth: 9,
           }]}
+
         />
         <View style={styles.navBar}><Text style={styles.navBarText}>Run</Text></View>
        
         <View style={styles.bottomBar}>
           <View style={styles.bottomBarGroup}>
+
+             <TouchableOpacity onPress={this._onPressButton}>
+      <Image
+        style={styles.imageRun}
+        source={require('./play.png')}
+      />
+    </TouchableOpacity>
             <Text style={styles.bottomBarHeader}>DISTANCE</Text>
-            <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
+             <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
           </View>
         </View>
-      </View>
+     </View>
+     
     )
+  },
+});
+
+class ReactNativeNavigationExample extends Component {
+  
+  
+componentDidMount() {
+	 SplashScreen.hide();
+}
+
+  
+
+  _renderScene(route, navigator) {
+    if (route.id === 1) {
+      return <PageOne navigator={navigator} />
+    } else if (route.id === 2) {
+      return <PageTwo navigator={navigator} />
+    }
+  }
+
+  _configureScene(route) {
+    return CustomSceneConfig;
+  }
+
+  render() {
+    return (
+      <Navigator
+        initialRoute={{id: 1, }}
+        renderScene={this._renderScene}
+        configureScene={this._configureScene} />
+    );
   }
 }
 
-
-
-var styles = StyleSheet.create({
- container: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  welcome: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
+    color: '#263441',
+  },
+  buttomGetText: {
+    fontFamily: 'Helvetica',
+    fontSize: 15,
+    textAlign: 'center',
+    margin: 10,
+    color: '#fff',
+  },
+  buttomGet: {
+    paddingVertical: 10,
+    paddingHorizontal: 20, 
+    backgroundColor: '#29D39A'
+  },
+   map: {
+    flex: 0.7,
+    width: width,
+    height: height
   },
   navBar: {
     backgroundColor: 'rgba(255,255,255,0.7)',
@@ -121,14 +230,9 @@ var styles = StyleSheet.create({
     textAlign: 'center',
     paddingTop: 30
   },
-  map: {
-    flex: 0.7,
-    width: width,
-    height: height
-  },
-  bottomBar: {
+bottomBar: {
     position: 'absolute',
-    height: 100,
+    height: 200,
     bottom: 0,
     backgroundColor: 'rgba(255,255,255,0.7)',
     width: width,
@@ -140,7 +244,7 @@ var styles = StyleSheet.create({
     flex: 1
   },
   bottomBarHeader: {
-    color: '#fff',
+    color: '#19B5FE',
     fontWeight: "400",
     textAlign: 'center'
   },
@@ -152,7 +256,16 @@ var styles = StyleSheet.create({
     color: '#19B5FE',
     textAlign: 'center'
   },
- });
+  imageRun: {
+    width: 72,
+    height: 72,
+    alignSelf: 'center'
+  },
+  imageLogo: {
+    width: 170,
+    height: 170,
+    marginTop: -110,
+  }
+});
 
-
-AppRegistry.registerComponent('PropertyFinder', () => Map);
+AppRegistry.registerComponent('PropertyFinder', () => ReactNativeNavigationExample);
