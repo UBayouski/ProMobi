@@ -9,14 +9,16 @@ import {
   MapView,
   Dimensions,
   Image,
-  Alert
+  Alert,
+  PropTypes,
+  TouchableHighlight
 } from 'react-native';
 
 import SplashScreen from 'react-native-splash-screen'
 
-import haversine from 'haversine'
-import pick from 'lodash.pick'
 
+import PageOne from './loadingScene'
+import PageTwo from './MapScene'
 
 var SCREEN_WIDTH = require('Dimensions').get('window').width;
 var BaseConfig = Navigator.SceneConfigs.FloatFromRight;
@@ -43,114 +45,8 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
 });
 
 
-var PageOne = React.createClass({
-  _handlePress() {
-    this.props.navigator.push({id: 2,});
-  },
-
-  render() {
-    return (
-      <View style={[styles.container, {backgroundColor: 'rgb(247, 246, 256)'}]}>
-      <Image
-        style={styles.imageLogo}
-        source={require('./logo.png')}
-      />
-        <Text style={styles.welcome}>Welcome to RunnerPro</Text>
-        <TouchableOpacity onPress={this._handlePress}>
-          <View style={styles.buttomGet}>
-            <Text style={styles.buttomGetText}>Get</Text>
-          </View>
-        </TouchableOpacity>
-       </View>
-    )
-  },
-});
-
-var PageTwo = React.createClass ({
-getInitialState: function() {
-    
-    return {
-      routeCoordinates: [],
-      distanceTravelled: 0,
-      prevLatLng: {},
-
-    }
-  },
-
- 
- _onPressButton() {
-    Alert.alert('Your distance '+ parseFloat(this.state.distanceTravelled).toFixed(2) +' km');
-   
-},
 
 
-  componentDidMount() {
-   
-   
-    navigator.geolocation.getCurrentPosition(
-      (position) => {},
-      (error) => alert(error.message),
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-    )
-    this.watchID = navigator.geolocation.watchPosition((position) => {
-      const { routeCoordinates, distanceTravelled } = this.state
-      const newLatLngs = {latitude: position.coords.latitude, longitude: position.coords.longitude }
-      const positionLatLngs = pick(position.coords, ['latitude', 'longitude'])
-      this.setState({
-        routeCoordinates: routeCoordinates.concat(positionLatLngs),
-        distanceTravelled: distanceTravelled + this.calcDistance(newLatLngs),
-        prevLatLng: newLatLngs
-      })
-    });
-  },
-
-  componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchID);
-  },
-
-  calcDistance(newLatLng) {
-    const { prevLatLng } = this.state
-    return (haversine(prevLatLng, newLatLng) || 0)
-  },
-
-
-  render() {
-
-    return (
-      <View style={styles.container}>
-        
-        <MapView
-          style={styles.map}
-          mapType='standard'
-          showsUserLocation={true}
-          followUserLocation={true}
-          overlays={[{
-            coordinates: this.state.routeCoordinates,
-            strokeColor: '#7B88F7',
-            lineWidth: 9,
-          }]}
-
-        />
-        <View style={styles.navBar}><Text style={styles.navBarText}>Run</Text></View>
-       
-        <View style={styles.bottomBar}>
-          <View style={styles.bottomBarGroup}>
-
-             <TouchableOpacity onPress={this._onPressButton}>
-      <Image
-        style={styles.imageRun}
-        source={require('./play.png')}
-      />
-    </TouchableOpacity>
-            <Text style={styles.bottomBarHeader}>DISTANCE</Text>
-             <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
-          </View>
-        </View>
-     </View>
-     
-    )
-  },
-});
 
 class ReactNativeNavigationExample extends Component {
   
@@ -158,8 +54,6 @@ class ReactNativeNavigationExample extends Component {
 componentDidMount() {
 	 SplashScreen.hide();
 }
-
-  
 
   _renderScene(route, navigator) {
     if (route.id === 1) {
@@ -256,7 +150,19 @@ bottomBar: {
     color: '#19B5FE',
     textAlign: 'center'
   },
-  imageRun: {
+  buttonRun: {
+    borderColor: '#000066',
+    borderWidth: 1,
+    borderRadius: 10,
+    width: 72,
+    height: 72,
+    alignSelf: 'center'
+  },
+  buttonPause: {
+     borderColor: '#000066',
+    backgroundColor: '#000066',
+    borderWidth: 1,
+    borderRadius: 10,
     width: 72,
     height: 72,
     alignSelf: 'center'
