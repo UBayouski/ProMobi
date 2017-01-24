@@ -15,6 +15,13 @@ import {
 
 } from 'react-native';
 
+import {
+  Menu,
+  MenuContext,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu';
 import pick from 'lodash.pick'
 import haversine from 'haversine'
 
@@ -102,12 +109,17 @@ constructor(props) {
     const { prevLatLng } = this.state
     return (haversine(prevLatLng, newLatLng) || 0)
   }
-
+_changeSelection(feed) {
+    this.setState({ myChatsSelected: feed === 'my' });
+    this.props.onChange(feed);
+  }
 
   render() {
 
+
     return (
       <View style={styles.container}>
+
         
         <MapView
           style={styles.map}
@@ -121,26 +133,41 @@ constructor(props) {
           }]}
 
         />
-        <View style={styles.navBar}><Text style={styles.navBarText}>Run</Text></View>
-       
+<View style={styles.navBar}>
+      <MenuContext>    
+    <Menu onSelect={value => alert(`Selected number: ${value}`)}>
+    <MenuTrigger>
+      <Text style={styles.navBarText}>Run</Text>
+       </MenuTrigger>
+       <MenuOptions>
+        <MenuOption value={1} text='One' />
+        <MenuOption value={2}>
+          <Text>Two</Text>
+        </MenuOption>
+        <MenuOption value={3} text='Three' />
+      </MenuOptions>
+    </Menu>
+  </MenuContext>
+  </View>
         <View style={styles.bottomBar}>
           <View style={styles.bottomBarGroup}>
 
-             <TouchableHighlight 
-             activeOpacity={1}
-          style={ this.state.pressStatus ? styles.buttonPause : styles.buttonRun }
-          onHideUnderlay={this._onHideUnderlay.bind(this)}
-          onShowUnderlay={this._onShowUnderlay.bind(this)}>
-      <Text style={ this.state.pressStatus ? styles.navBarText : styles.navBarText }>ff</Text>
+             <TouchableHighlight onPress={this._onPressButton}>
+      <Image
+        style={styles.imageRun}
+        source={require('./play.png')}
+      />
     </TouchableHighlight>
             <Text style={styles.bottomBarHeader}>DISTANCE</Text>
-             <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
+            <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
           </View>
         </View>
-     </View>
+      </View>
+
      
     )
   }
+
 };
 
 
@@ -221,7 +248,10 @@ bottomBar: {
     width: 72,
     height: 72,
     alignSelf: 'center'
-  }
+  },
+  imageRun: {
+    alignSelf: 'center'
+  },
 });
 
 

@@ -42,9 +42,6 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
 
 
 var PageOne = React.createClass ( {
-  
-
-
   _handlePress() {
     this.props.navigator.push({id: 2,});
   },
