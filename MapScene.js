@@ -11,19 +11,18 @@ import {
   Image,
   Alert,
   PropTypes,
+  ScrollView,
   TouchableHighlight
 
 } from 'react-native';
 
-import {
-  Menu,
-  MenuContext,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
+
 import pick from 'lodash.pick'
 import haversine from 'haversine'
+import SideMenu from 'react-native-side-menu'
+import ModalDropdown from 'react-native-modal-dropdown'
+import Hamburger from 'react-native-hamburger'
+
 
 
 var SCREEN_WIDTH = require('Dimensions').get('window').width
@@ -50,6 +49,71 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
   }
 });
 
+const DEMO_OPTIONS_1 = ['Run','Type1','Type2','Type3','Type4'];
+
+class Button extends Component{
+  constructor(props){
+    super(props);
+  }
+  handlePress(e){
+    if(this.props.onPress){
+      this.props.onPress(e);
+    }
+  }
+
+  render(){
+    return(
+      <TouchableOpacity
+      onPress={this.handlePress.bind(this)}
+      style={this.props.style}>
+      <Text>{this.props.children}</Text>
+      </TouchableOpacity>
+      );
+  }
+}
+
+class Menu extends Component{
+  static propTypes ={
+    onItemSelected : React.PropTypes.func.isRequired,
+  };
+  render(){
+    return(
+      <ScrollView scrollsToTop ={false} style={styles.menu}>
+
+
+      <Text
+      onPress={() => this.props.onItemSelected('ACCOUNT')}
+      style={styles.item}>
+      ACCOUNT
+      </Text>
+
+         <Text
+      onPress={() =>this.props.onItemSelected('ACTYVITY LOG')}
+      style={styles.item}>
+      ACTYVITY LOG
+      </Text>
+
+         <Text
+      onPress={() =>this.props.onItemSelected('SCREEN LAYOUT')}
+      style={styles.item}>
+      SCREEN LAYOUT
+      </Text>
+
+         <Text
+      onPress={() =>this.props.onItemSelected('LOG OUT')}
+      style={styles.item}>
+      LOG OUT
+      </Text>
+
+</ScrollView>
+
+
+
+      );
+  }
+
+
+}
 
 class PageTwo extends Component {
 
@@ -62,10 +126,48 @@ constructor(props) {
     calcDistanceButton: false,
     prevLatLng: {},
     pressStatus: false,
+    active : false,
+    isOpen : false,
+    selectedItem : 'ACCOUNT',
   }
 }
 
+toggle(){
+  this.setState({
+    isOpen : !this.state.isOpen,
+    active: !this.state.active,
+  });
+}
 
+updateMenuState(isOpen){
+  this.setState({isOpen,});
+}
+
+onMenuItemSelected = (item) =>{
+  if(item == 'ACTYVITY LOG')
+    alert('hi');
+
+  if(item == 'LOG OUT')
+    this.props.navigator.push({id: 1,});
+
+  this.setState({
+    isOpen:false,
+    selectedItem:item,
+    active:false,
+  });
+}
+_dropdown_2_renderRow(rowData,rowID, hieghlighted){
+  return(
+    <TouchableHighlight underlayColor = 'cornflowerble'>
+  <View style={styles.dropdown_2_row}>
+  <Text style ={styles.navBarText1}>
+{`${rowData}`}
+  </Text>
+  </View>
+  </TouchableHighlight>
+
+);
+}
 
   _onHideUnderlay(){
     this.setState({ pressStatus: false });
@@ -116,11 +218,16 @@ _changeSelection(feed) {
 
   render() {
 
+    const menu =<Menu onItemSelected = {this.onMenuItemSelected}/>;
+
 
     return (
+      <SideMenu
+      openMenuOffset={150}
+      menu={menu}
+      isOpen={this.state.isOpen}
+      onChange ={(isOpen) => this.updateMenuState(isOpen)}>
       <View style={styles.container}>
-
-        
         <MapView
           style={styles.map}
           mapType='standard'
@@ -134,20 +241,14 @@ _changeSelection(feed) {
 
         />
 <View style={styles.navBar}>
-      <MenuContext>    
-    <Menu onSelect={value => alert(`Selected number: ${value}`)}>
-    <MenuTrigger>
-      <Text style={styles.navBarText}>Run</Text>
-       </MenuTrigger>
-       <MenuOptions>
-        <MenuOption value={1} text='One' />
-        <MenuOption value={2}>
-          <Text>Two</Text>
-        </MenuOption>
-        <MenuOption value={3} text='Three' />
-      </MenuOptions>
-    </Menu>
-  </MenuContext>
+
+<ModalDropdown style = {styles.dropdown_1}
+dropdownStyle = {styles.dropdown_2_dropdown}
+textStyle ={styles.navBarText}
+defaultValue={'Please select'}
+options={DEMO_OPTIONS_1}
+renderRow={this._dropdown_2_renderRow.bind(this)}/>
+
   </View>
         <View style={styles.bottomBar}>
           <View style={styles.bottomBarGroup}>
@@ -163,15 +264,71 @@ _changeSelection(feed) {
           </View>
         </View>
       </View>
+      <Button style ={styles.button}>
+      <Hamburger active ={this.state.active}
+      onPress={() =>this.toggle()}
+      style={styles.button}
+      type="spinArrow"/>
+      </Button>
+      </SideMenu>
 
      
-    )
+    );
   }
+}
 
-};
 
 
 const styles = StyleSheet.create({
+
+dropdown_2_row: {
+  flexDirection:'row',
+  height:40,
+  alignItems:'center',
+  backgroundColor:'#8A2BE2',
+},
+dropdown_2_dropdown: {
+  width:375,
+  height:150,
+  borderColor:'#000000',
+  borderWidth:2,
+  borderRadius:3,
+  
+},
+dropdown_1:{
+  flex:1,
+  top:32,
+},
+  menu:{
+    flex:1,
+    width:window.width,
+    height:window.height,
+    backgroundColor:'#8A2BE2',
+    
+  },
+  item:{
+    color:'#FFFFFF',
+    fontSize: 16,
+    fontWeight:"700",
+    paddingTop:40,
+    padding:10
+
+  },
+  button:{
+    position: 'absolute',
+    top:20,
+    padding:10,
+  },
+
+  containerPopup: {
+    flexDirection: 'column',
+    padding: 30,
+  },
+  backdrop: {
+    backgroundColor: 'red',
+    opacity: 0.5,
+  },
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -197,14 +354,24 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: 0,
-    right: 0
+    right: 0,
+    
   },
   navBarText: {
     color: '#7B88F7',
     fontSize: 16,
     fontWeight: "700",
     textAlign: 'center',
-    paddingTop: 30
+    
+  },
+
+    navBarText1: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: "700",
+    
+    
+    
   },
 bottomBar: {
     position: 'absolute',
@@ -252,7 +419,72 @@ bottomBar: {
   imageRun: {
     alignSelf: 'center'
   },
-});
 
+});
+const triggerStyles = {
+  triggerText: {
+    color: 'white',
+  },
+  triggerOuterWrapper: {
+    backgroundColor: 'orange',
+    padding: 5,
+    flex: 1,
+  },
+  triggerWrapper: {
+    backgroundColor: 'blue',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  triggerTouchable: {
+    underlayColor: 'darkblue',
+    activeOpacity: 70,
+    style : {
+      flex: 1,
+    },
+  },
+};
+
+const optionsStyles = {
+  optionsContainer: {
+    backgroundColor: 'green',
+    padding: 5,
+  },
+  optionsWrapper: {
+    backgroundColor: 'purple',
+  },
+  optionWrapper: {
+    backgroundColor: 'yellow',
+    margin: 5,
+  },
+  optionTouchable: {
+    underlayColor: 'gold',
+    activeOpacity: 70,
+  },
+  optionText: {
+    color: 'brown',
+  },
+};
+
+const optionStyles = {
+  optionTouchable: {
+    underlayColor: 'red',
+    activeOpacity: 40,
+  },
+  optionWrapper: {
+    backgroundColor: 'pink',
+    margin: 5,
+  },
+  optionText: {
+    color: 'black',
+  },
+};
+
+
+
+const menuContextStyles = {
+  menuContextWrapper: styles.container,
+  backdrop: styles.backdrop,
+};
 
 module.exports = PageTwo;
