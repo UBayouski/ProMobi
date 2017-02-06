@@ -288,11 +288,11 @@ dropdown_2_row: {
   backgroundColor:'#8A2BE2',
 },
 dropdown_2_dropdown: {
-  width:375,
-  height:150,
-  borderColor:'#000000',
-  borderWidth:2,
-  borderRadius:3,
+	alignItems:'center',
+  width:SCREEN_WIDTH,
+  height:210,
+  
+  backgroundColor:'#8A2BE2',
   
 },
 dropdown_1:{
@@ -366,6 +366,7 @@ dropdown_1:{
   },
 
     navBarText1: {
+    	textAlign:'center',
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: "700",
