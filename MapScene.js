@@ -13,9 +13,7 @@ import {
   PropTypes,
   ScrollView,
   TouchableHighlight
-
 } from 'react-native';
-
 
 import pick from 'lodash.pick'
 import haversine from 'haversine'
@@ -23,14 +21,9 @@ import SideMenu from 'react-native-side-menu'
 import ModalDropdown from 'react-native-modal-dropdown'
 import Hamburger from 'react-native-hamburger'
 
-
-
 var SCREEN_WIDTH = require('Dimensions').get('window').width
 var BaseConfig = Navigator.SceneConfigs.FloatFromRight
-
 const { width, height } = Dimensions.get('window')
-
-
 
 var CustomLeftToRightGesture = Object.assign({}, BaseConfig.gestures.pop, {
   // Make it snap back really quickly after canceling pop
@@ -50,7 +43,6 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
 });
 
 const DEMO_OPTIONS_1 = ['Run','Type1','Type2','Type3','Type4'];
-
 class Button extends Component{
   constructor(props){
     super(props);
@@ -60,7 +52,6 @@ class Button extends Component{
       this.props.onPress(e);
     }
   }
-
   render(){
     return(
       <TouchableOpacity
@@ -79,47 +70,34 @@ class Menu extends Component{
   render(){
     return(
       <ScrollView scrollsToTop ={false} style={styles.menu}>
-
-
       <Text
       onPress={() => this.props.onItemSelected('ACCOUNT')}
       style={styles.item}>
       ACCOUNT
       </Text>
-
          <Text
       onPress={() =>this.props.onItemSelected('ACTYVITY LOG')}
       style={styles.item}>
       ACTYVITY LOG
       </Text>
-
          <Text
       onPress={() =>this.props.onItemSelected('SCREEN LAYOUT')}
       style={styles.item}>
       SCREEN LAYOUT
       </Text>
-
          <Text
       onPress={() =>this.props.onItemSelected('LOG OUT')}
       style={styles.item}>
       LOG OUT
       </Text>
-
 </ScrollView>
-
-
-
       );
   }
-
-
 }
 
 class PageTwo extends Component {
-
 constructor(props) {
   super(props)
-
   this.state = {
     routeCoordinates: [],
     distanceTravelled: 0,
@@ -129,6 +107,8 @@ constructor(props) {
     active : false,
     isOpen : false,
     selectedItem : 'ACCOUNT',
+    playPress : false,
+    stopPress : true,
   }
 }
 
@@ -148,8 +128,8 @@ onMenuItemSelected = (item) =>{
     alert('hi');
 
   if(item == 'LOG OUT')
-    this.props.navigator.push({id: 1,});
 
+    this.props.navigator.push({id: 1,});
   this.setState({
     isOpen:false,
     selectedItem:item,
@@ -157,6 +137,8 @@ onMenuItemSelected = (item) =>{
   });
 }
 _dropdown_2_renderRow(rowData,rowID, hieghlighted){
+try{
+if(this.state.stopPress== true){
   return(
     <TouchableHighlight underlayColor = 'cornflowerble'>
   <View style={styles.dropdown_2_row}>
@@ -165,8 +147,9 @@ _dropdown_2_renderRow(rowData,rowID, hieghlighted){
   </Text>
   </View>
   </TouchableHighlight>
-
 );
+}}
+  catch (err) {}
 }
 
   _onHideUnderlay(){
@@ -177,36 +160,77 @@ _dropdown_2_renderRow(rowData,rowID, hieghlighted){
     this.setState({ pressStatus: true });
   }
 
- _onPressButton() {
-    Alert.alert('Your distance '+ parseFloat(this.state.distanceTravelled).toFixed(2) +' km');
-   
+_onChangePlay(){
+  this.setState({
+    playPress : !this.state.playPress,
+    stopPress : false,
+
+  });
 }
 
+_onPresStop(){
+  alert (parseFloat(this.state.distanceTravelled).toFixed(2));
+  this.setState({
+    stopPress : true,
+    playPress : false,
+    distanceTravelled: 0,
+  })
+}
+
+ _onPressButton() {
+}
+
+ _onPressPlayButton(){
+   if(this.state.playPress == false){
+   return (
+    <Image
+     style={styles.imageRun}
+     source={require('./play.png')}/>
+   );
+ }else{
+   return (
+     <Image
+     style={styles.imageRun}
+     source={require('./pause.png')}/>
+   );
+ }
+ }
+
+ _onRenderStop(){
+   if(this.state.stopPress == false){
+     return(
+        <Image
+        style = {styles.imageStop}
+        source={require('./stop.png')}/>
+     );
+   }
+ }
 
   componentDidMount() {
-   
-   
+
     navigator.geolocation.getCurrentPosition(
       (position) => {},
       (error) => alert(error.message),
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+      {enableHighAccuracy: true, timeout: 200, maximumAge: 1000}
     )
     this.watchID = navigator.geolocation.watchPosition((position) => {
       const { routeCoordinates, distanceTravelled } = this.state
       const newLatLngs = {latitude: position.coords.latitude, longitude: position.coords.longitude }
       const positionLatLngs = pick(position.coords, ['latitude', 'longitude'])
+  if (this.state.playPress == true){
       this.setState({
         routeCoordinates: routeCoordinates.concat(positionLatLngs),
         distanceTravelled: distanceTravelled + this.calcDistance(newLatLngs),
         prevLatLng: newLatLngs
       })
+}
     });
+
   }
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
   }
-
   calcDistance(newLatLng) {
     const { prevLatLng } = this.state
     return (haversine(prevLatLng, newLatLng) || 0)
@@ -215,12 +239,8 @@ _changeSelection(feed) {
     this.setState({ myChatsSelected: feed === 'my' });
     this.props.onChange(feed);
   }
-
   render() {
-
     const menu =<Menu onItemSelected = {this.onMenuItemSelected}/>;
-
-
     return (
       <SideMenu
       openMenuOffset={150}
@@ -238,27 +258,25 @@ _changeSelection(feed) {
             strokeColor: '#7B88F7',
             lineWidth: 9,
           }]}
-
         />
 <View style={styles.navBar}>
-
 <ModalDropdown style = {styles.dropdown_1}
 dropdownStyle = {styles.dropdown_2_dropdown}
 textStyle ={styles.navBarText}
 defaultValue={'Please select'}
 options={DEMO_OPTIONS_1}
 renderRow={this._dropdown_2_renderRow.bind(this)}/>
-
   </View>
         <View style={styles.bottomBar}>
           <View style={styles.bottomBarGroup}>
-
-             <TouchableHighlight onPress={this._onPressButton}>
-      <Image
-        style={styles.imageRun}
-        source={require('./play.png')}
-      />
-    </TouchableHighlight>
+          <View style={styles.FromButton}>
+          <TouchableOpacity onPress = {() => this._onPresStop()}>
+          {this._onRenderStop()}
+          </TouchableOpacity>
+          </View>
+          <TouchableOpacity  style={styles.imageRun} onPress={() => this._onChangePlay()}>
+             {this._onPressPlayButton()}
+             </TouchableOpacity>
             <Text style={styles.bottomBarHeader}>DISTANCE</Text>
             <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
           </View>
@@ -271,16 +289,10 @@ renderRow={this._dropdown_2_renderRow.bind(this)}/>
       type="spinArrow"/>
       </Button>
       </SideMenu>
-
-     
     );
   }
 }
-
-
-
 const styles = StyleSheet.create({
-
 dropdown_2_row: {
   flexDirection:'row',
   height:40,
@@ -291,9 +303,7 @@ dropdown_2_dropdown: {
 	alignItems:'center',
   width:SCREEN_WIDTH,
   height:210,
-  
   backgroundColor:'#8A2BE2',
-  
 },
 dropdown_1:{
   flex:1,
@@ -304,7 +314,6 @@ dropdown_1:{
     width:window.width,
     height:window.height,
     backgroundColor:'#8A2BE2',
-    
   },
   item:{
     color:'#FFFFFF',
@@ -312,14 +321,12 @@ dropdown_1:{
     fontWeight:"700",
     paddingTop:40,
     padding:10
-
   },
   button:{
     position: 'absolute',
     top:20,
     padding:10,
   },
-
   containerPopup: {
     flexDirection: 'column',
     padding: 30,
@@ -328,7 +335,6 @@ dropdown_1:{
     backgroundColor: 'red',
     opacity: 0.5,
   },
-
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -355,24 +361,18 @@ dropdown_1:{
     bottom: 0,
     left: 0,
     right: 0,
-    
   },
   navBarText: {
     color: '#7B88F7',
     fontSize: 16,
     fontWeight: "700",
     textAlign: 'center',
-    
   },
-
     navBarText1: {
-    	textAlign:'center',
+  	textAlign:'center',
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: "700",
-    
-    
-    
   },
 bottomBar: {
     position: 'absolute',
@@ -383,6 +383,14 @@ bottomBar: {
     padding: 20,
     flexWrap: 'wrap',
     flexDirection: 'row'
+  },
+  FromButton:{
+    position : 'absolute',
+    height : 200,
+    width : 100,
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingHorizontal : 60,
   },
   bottomBarGroup: {
     flex: 1
@@ -406,21 +414,24 @@ bottomBar: {
     borderRadius: 10,
     width: 72,
     height: 72,
-    alignSelf: 'center'
   },
   buttonPause: {
-     borderColor: '#000066',
+    borderColor: '#000066',
     backgroundColor: '#000066',
     borderWidth: 1,
     borderRadius: 10,
     width: 72,
     height: 72,
-    alignSelf: 'center'
+  },
+  buttonStop: {
+    borderColor: '#000066',
+    backgroundColor: '#000066',
+    borderWidth: 1,
+    borderRadius: 10,
   },
   imageRun: {
     alignSelf: 'center'
   },
-
 });
 const triggerStyles = {
   triggerText: {
@@ -441,7 +452,7 @@ const triggerStyles = {
     underlayColor: 'darkblue',
     activeOpacity: 70,
     style : {
-      flex: 1,
+    flex: 1,
     },
   },
 };
@@ -481,11 +492,8 @@ const optionStyles = {
   },
 };
 
-
-
 const menuContextStyles = {
   menuContextWrapper: styles.container,
   backdrop: styles.backdrop,
 };
-
 module.exports = PageTwo;
