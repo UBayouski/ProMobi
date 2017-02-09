@@ -6,14 +6,15 @@ import {
   View,
   Navigator,
   TouchableOpacity,
-  MapView,
   Dimensions,
   Image,
   Alert,
   PropTypes,
   ScrollView,
-  TouchableHighlight
+  TouchableHighlight,
+  AsyncStorage
 } from 'react-native';
+import Mapbox, { MapView } from 'react-native-mapbox-gl';
 
 import pick from 'lodash.pick'
 import haversine from 'haversine'
@@ -41,7 +42,8 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
     pop: CustomLeftToRightGesture,
   }
 });
-
+const speedlist=[];
+const coord=[];
 const DEMO_OPTIONS_1 = ['Run','Type1','Type2','Type3','Type4'];
 class Button extends Component{
   constructor(props){
@@ -109,6 +111,7 @@ constructor(props) {
     selectedItem : 'ACCOUNT',
     playPress : false,
     stopPress : true,
+    speed : 0,
   }
 }
 
@@ -125,7 +128,7 @@ updateMenuState(isOpen){
 
 onMenuItemSelected = (item) =>{
   if(item == 'ACTYVITY LOG')
-    alert('hi');
+    this.props.navigator.push({id: 3,});
 
   if(item == 'LOG OUT')
 
@@ -161,23 +164,47 @@ if(this.state.stopPress== true){
   }
 
 _onChangePlay(){
+  if(this.state.playPress == true){
+    this.setState({
+      prevLatLng : {},
+    })
+  }
   this.setState({
     playPress : !this.state.playPress,
     stopPress : false,
+
+
 
   });
 }
 
 _onPresStop(){
+ const arrayData=[];
+ const data={
+ time: JSON.stringify(new Date),
+ distance:parseFloat(this.state.distanceTravelled).toFixed(2),
+ coordinates: coord,
+ speed:speedlist
+ }
+ arrayData.push(data);
   alert (parseFloat(this.state.distanceTravelled).toFixed(2));
   this.setState({
     stopPress : true,
     playPress : false,
     distanceTravelled: 0,
+    prevLatLng: {},
+    routeCoordinates:[],
   })
-}
-
- _onPressButton() {
+  AsyncStorage.getItem('database').then((value)=>{
+                                       if(value !== null){
+                                       const d=JSON.parse(value);
+                                       d.push(data)
+                                       AsyncStorage.setItem('database',JSON.stringify(d))
+                                       }
+                                       else{
+                                       AsyncStorage.setItem('database',JSON.stringify(arrayData))
+                                     }
+                                       })
 }
 
  _onPressPlayButton(){
@@ -210,18 +237,28 @@ _onPresStop(){
 
     navigator.geolocation.getCurrentPosition(
       (position) => {},
+      (speed) => {},
       (error) => alert(error.message),
-      {enableHighAccuracy: true, timeout: 200, maximumAge: 1000}
+      {enableHighAccuracy: true, timeout: 0, maximumAge: 1000}
     )
     this.watchID = navigator.geolocation.watchPosition((position) => {
-      const { routeCoordinates, distanceTravelled } = this.state
+      const { routeCoordinates, distanceTravelled , speed } = this.state
       const newLatLngs = {latitude: position.coords.latitude, longitude: position.coords.longitude }
       const positionLatLngs = pick(position.coords, ['latitude', 'longitude'])
-  if (this.state.playPress == true){
+      this.setState({
+      speed : position.coords.speed,
+      });
+      if (this.state.stopPress == false){
       this.setState({
         routeCoordinates: routeCoordinates.concat(positionLatLngs),
+      });
+    }
+  if (this.state.playPress == true){
+      coord.push(newLatLngs)
+      speedlist.push(position.coords.speed)
+      this.setState({
         distanceTravelled: distanceTravelled + this.calcDistance(newLatLngs),
-        prevLatLng: newLatLngs
+        prevLatLng: newLatLngs,
       })
 }
     });
@@ -239,6 +276,9 @@ _changeSelection(feed) {
     this.setState({ myChatsSelected: feed === 'my' });
     this.props.onChange(feed);
   }
+
+
+
   render() {
     const menu =<Menu onItemSelected = {this.onMenuItemSelected}/>;
     return (
@@ -250,7 +290,6 @@ _changeSelection(feed) {
       <View style={styles.container}>
         <MapView
           style={styles.map}
-          mapType='standard'
           showsUserLocation={true}
           followUserLocation={true}
           overlays={[{
@@ -269,6 +308,9 @@ renderRow={this._dropdown_2_renderRow.bind(this)}/>
   </View>
         <View style={styles.bottomBar}>
           <View style={styles.bottomBarGroup}>
+          <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)}</Text>
+          <Text style={styles.bottomBarHeader}>km</Text>
+          <Text style={styles.bottomBarContent}>{parseFloat(this.state.speed)}</Text>
           <View style={styles.FromButton}>
           <TouchableOpacity onPress = {() => this._onPresStop()}>
           {this._onRenderStop()}
@@ -277,8 +319,7 @@ renderRow={this._dropdown_2_renderRow.bind(this)}/>
           <TouchableOpacity  style={styles.imageRun} onPress={() => this._onChangePlay()}>
              {this._onPressPlayButton()}
              </TouchableOpacity>
-            <Text style={styles.bottomBarHeader}>DISTANCE</Text>
-            <Text style={styles.bottomBarContent}>{parseFloat(this.state.distanceTravelled).toFixed(2)} km</Text>
+
           </View>
         </View>
       </View>
@@ -496,4 +537,6 @@ const menuContextStyles = {
   menuContextWrapper: styles.container,
   backdrop: styles.backdrop,
 };
+
+
 module.exports = PageTwo;
