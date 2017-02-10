@@ -19,6 +19,9 @@ import SplashScreen from 'react-native-splash-screen'
 
 import PageOne from './loadingScene'
 import PageTwo from './MapScene'
+import PageLctyvityLog from './ActyvityLog'
+import SingUp from './SingUpScreen'
+import RegistrScreen from './RegistrScreen'
 
 var SCREEN_WIDTH = require('Dimensions').get('window').width;
 var BaseConfig = Navigator.SceneConfigs.FloatFromRight;
@@ -49,8 +52,8 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
 
 
 class ReactNativeNavigationExample extends Component {
-  
-  
+
+
 componentDidMount() {
 	 SplashScreen.hide();
 }
@@ -58,8 +61,17 @@ componentDidMount() {
   _renderScene(route, navigator) {
     if (route.id === 1) {
       return <PageOne navigator={navigator} />
-    } else if (route.id === 2) {
+    } if (route.id === 2) {
       return <PageTwo navigator={navigator} />
+    }
+    if (route.id == 3){
+      return <PageLctyvityLog navigator ={navigator}/>
+    }
+    if (route.id == 4){
+      return <SingUp navigator = {navigator}/>
+    }
+    if (route.id == 5){
+      return <RegistrScreen navigator = {navigator}/>
     }
   }
 
@@ -70,9 +82,10 @@ componentDidMount() {
   render() {
     return (
       <Navigator
-        initialRoute={{id: 1, }}
+        initialRoute={{id: 4, }}
         renderScene={this._renderScene}
-        configureScene={this._configureScene} />
+        configureScene={this._configureScene}
+        />
     );
   }
 }
@@ -99,7 +112,7 @@ const styles = StyleSheet.create({
   },
   buttomGet: {
     paddingVertical: 10,
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
     backgroundColor: '#29D39A'
   },
    map: {

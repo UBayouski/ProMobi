@@ -43,7 +43,7 @@ var CustomSceneConfig = Object.assign({}, BaseConfig, {
 
 var PageOne = React.createClass ( {
   _handlePress() {
-    this.props.navigator.push({id: 2,});
+    this.props.navigator.replace({id: 2,});
   },
 
   render() {
@@ -86,8 +86,8 @@ const styles = StyleSheet.create({
   },
   buttomGet: {
     paddingVertical: 10,
-    paddingHorizontal: 20, 
-    backgroundColor: '#29D39A'
+    paddingHorizontal: 20,
+    backgroundColor: '#FF1493'
   },
   imageLogo: {
     width: 170,
